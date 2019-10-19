@@ -6,11 +6,15 @@
 #define ENTER printf("\n=== Run test " TestName " ===\n\n");
 #define EXIT printf("\n=== Exit test " TestName " ===\n\n");
 
-#define TEST_MODEL(type, DataType, LabelType)                   \
-{                                                               \
-    auto model = stat::CreateModel<DataType, LabelType>(type);  \
-    model->train(trainX, trainY);                               \
-    model->validate(testX, testY);                              \
+#define TEST_MODEL(type, DataType, LabelType, extra)                    \
+{                                                                       \
+    auto model = stat::CreateModel<DataType, LabelType>(type, extra);   \
+    if (model) {                                                        \
+        model->train(trainX, trainY);                                   \
+        model->validate(testX, testY);                                  \
+    } else {                                                            \
+        printf("ERROR: create model failed\n");                         \
+    }                                                                   \
 }
 
 int main() {
@@ -25,8 +29,8 @@ int main() {
         auto testX = std::get<0>(test);
         auto testY = std::get<1>(test);
 
-        TEST_MODEL(stat::ModelType::MODEL_PERCEPTRON, double, double);
-
+        TEST_MODEL(stat::ModelType::MODEL_PERCEPTRON, double, double, 0);
+        TEST_MODEL(stat::ModelType::MODEL_PERCEPTRON, double, double, 1);
     }
 
     EXIT;

@@ -58,11 +58,14 @@ auto [X_train, y_train] = stat::mnist::loadTrainSet(); // structured binding
 ```cpp
 #include "Stat.h"
 
-auto model = stat::CreateModel<DataType, LabelType>(ModelType); // returns std::unique_ptr<Model>
+// returns std::unique_ptr<Model>, extra indicates to some extra infos some model requires.
+auto model = stat::CreateModel<DataType, LabelType>(ModelType, extra);
 model->train(X_train, y_train);
 model->validate(X_test, y_test);
 
+// Outputs:
 // INFO: creating perceptron model
+// INFO: training original form
 // INFO: training done.
 //
 // Perceptron:
@@ -70,7 +73,19 @@ model->validate(X_test, y_test);
 // Model: $f(x) = sign(w \cdot x + b)$
 //        w = [ -0.500000, -0.170000, 0.810000, 0.980000,  ]
 //        b = -0.300000
+//
 // accuracy: 1.000000
-
+//
+// INFO: creating perceptron model
+// INFO: training dual form
+// INFO: training done.
+//
+// Perceptron:
+//
+// Model: $f(x) = sign(w \cdot x + b)$
+//        w = [ -0.400000, -5.100000, 8.300000, 4.000000,  ]
+//        b = -1.000000
+//
+// accuracy: 1.000000
 ```
 

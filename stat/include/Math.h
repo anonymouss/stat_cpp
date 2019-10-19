@@ -31,7 +31,7 @@ double dot(Vec<T1> x1, Vec<T2> x2) {
     double sum = 0.0;
     auto m1 = x1.size(), m2 = x2.size();
     if (m1 != m2) {
-        printf("ERROR: dimensions are not aligned of two input vectors\n");
+        printf("ERROR: dot, dimensions are not aligned of two input vectors [%zu, %zu]\n", m1, m2);
         return sum;
     }
     for (auto i = 0; i < m1; ++i) {
@@ -58,7 +58,7 @@ template <typename T1, typename T2>
 Vec<double> add(Vec<T1> v1, Vec<T2> v2) {
     auto m1 = v1.size(), m2 = v2.size();
     if (m1 != m2) {
-        printf("ERROR: dimensions are not aligned of two input vectors\n");
+        printf("ERROR: add, dimensions are not aligned of two input vectors [%zu, %zu]\n", m1, m2);
         return {};
     }
     auto v = allocVec<double>(m1);
@@ -66,6 +66,17 @@ Vec<double> add(Vec<T1> v1, Vec<T2> v2) {
         v[i] = v1[i] + v2[i];
     }
     return v;
+}
+
+template <typename T1, typename T2>
+Vec<double> add(Vec<T1>v1, T2 a) {
+    auto v2 = allocVec<T2>(v1.size(), a);
+    return add(v1, v2);
+}
+
+template <typename T1, typename T2>
+Vec<double> add(T1 a, Vec<T2> v2) {
+    return add(v2, a);
 }
 
 template <typename T>
@@ -78,6 +89,30 @@ Mat<T> gram(Mat<T> X) {
         }
     }
     return g;
+}
+
+template <typename T>
+Vec<T> getRow(Mat<T> mat, uint32_t r) {
+    if (r >= mat.size()) {
+        printf("ERROR: row index out of bound\n");
+        return {};
+    }
+    Vec<T> row = mat[r];
+    return row;
+}
+
+template <typename T>
+Vec<T> getCol(Mat<T> mat, uint32_t c) {
+    auto m = mat.size(), n = mat[0].size();
+    if (c >= n) {
+        printf("ERROR: col index out of bound\n");
+        return {};
+    }
+    Vec<T> col;
+    for (auto i = 0; i < m; ++i) {
+        col.emplace_back(mat[i][c]);
+    }
+    return col;
 }
 
 }  // namespace stat
