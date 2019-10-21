@@ -1,6 +1,7 @@
-#include <cstdio>
-
 #include "Stat.h"
+
+#include <cstdio>
+#include <thread>
 
 #define TestName "Model"
 #define ENTER printf("\n=== Run test " TestName " ===\n\n");
@@ -23,6 +24,8 @@ int main() {
     ENTER;
 
     {  // iris
+        printf("*** Test on iris dataset ***\n\n");
+
         auto train = stat::iris::loadTrainSet<double>();
         auto trainX = std::get<0>(train);
         auto trainY = std::get<1>(train);
@@ -30,6 +33,11 @@ int main() {
         auto test = stat::iris::loadTestSet<double>();
         auto testX = std::get<0>(test);
         auto testY = std::get<1>(test);
+
+        // NOTE: There is a trap. We already know tuple here can be simplified to auto [trainX,
+        // trainY] = ... from C++17 (aka. structured binding). But we can't use this here, the
+        // lambda here will reject it. Details explained here:
+        // https://stackoverflow.com/questions/46114214/lambda-implicit-capture-fails-with-variable-declared-from-structured-binding
 
         auto TEST_MODEL = [&](stat::ModelType type, auto DataType, auto LabelType,
                               stat::ModelParam param) {
@@ -50,6 +58,34 @@ int main() {
 
         // test k-NN
         TEST_MODEL(stat::ModelType::MODEL_KNN, Wrap_v<double>, Wrap_v<double>, {{"k", "5"}});
+    }
+
+    {  // mnist
+        printf("*** Test on mnist dataset ***\n\n");
+
+        auto train = stat::mnist::loadTrainSet<double>();
+        auto trainX = std::get<0>(train);
+        auto trainY = std::get<1>(train);
+
+        auto test = stat::mnist::loadTestSet<double>();
+        auto testX = std::get<0>(test);
+        auto testY = std::get<1>(test);
+
+        auto TEST_MODEL = [&](stat::ModelType type, auto DataType, auto LabelType,
+                              stat::ModelParam param) {
+            auto model = stat::CreateModel<decltype(DataType), decltype(LabelType)>(type, param);
+            if (model) {
+                model->train(trainX, trainY);
+                model->validate(testX, testY);
+            } else {
+                printf("ERROR: create model failed\n");
+            }
+        };
+
+        // test k-NN
+        // DISABLED: mnist dataset has 60000 train samples and 10000 test samples, each sample has
+        // 784 dim features. this simple kNN impl cost too much time to valid all samples
+        // TEST_MODEL(stat::ModelType::MODEL_KNN, Wrap_v<double>, Wrap_v<double>, {{"k", "5"}});
     }
 
     EXIT;

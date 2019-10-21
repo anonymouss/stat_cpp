@@ -64,6 +64,8 @@ KNN<DataType, LabelType>::KNN(ModelParam param)
 template <typename DataType, typename LabelType>
 bool KNN<DataType, LabelType>::train(const Data<DataType> &X_train,
                                      const Data<LabelType> &y_train) {
+    Clock clk(__func__);
+
     printf("INFO: k-NN has no training progress\n");
     auto m = X_train.m, n = X_train.n;
     if (m == 0 || n == 0) {
@@ -81,7 +83,7 @@ template <typename DataType, typename LabelType>
 LabelType KNN<DataType, LabelType>::predict(const Vec<DataType> &X) {
     auto m = xdata.m;
     if (k > m) {
-        printf("WARNING: impreper k, set to k = m = %d\n", m);
+        printf("WARNING: improper k, set to k = m = %d\n", m);
         k = m;
     }
     std::multimap<double, LabelType> knnMap;
@@ -120,6 +122,8 @@ LabelType KNN<DataType, LabelType>::predict(const Vec<DataType> &X) {
 template <typename DataType, typename LabelType>
 double KNN<DataType, LabelType>::validate(const Data<DataType> &X_test,
                                           const Data<LabelType> &y_test) {
+    Clock clk(__func__);
+
     double correct = 0.0;
     auto m = X_test.m;
     for (auto i = 0; i < m; ++i) {

@@ -2,6 +2,7 @@
 #define __MODEL_H__
 
 #include "Types.h"
+#include "Utils.h"
 
 #include <cstdint>
 #include <string>

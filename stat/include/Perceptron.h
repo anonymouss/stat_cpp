@@ -81,6 +81,8 @@ LabelType Perceptron<DataType, LabelType>::predict(const Vec<DataType> &X) {
 template <typename DataType, typename LabelType>
 double Perceptron<DataType, LabelType>::validate(const Data<DataType> &X_test,
                                                  const Data<LabelType> &y_test) {
+    Clock clk(__func__);
+
     double correct = 0.0;
     auto m = X_test.m;
     for (auto i = 0; i < m; ++i) {
@@ -117,6 +119,8 @@ bool Perceptron<DataType, LabelType>::train(const Data<DataType> &X_train,
 template <typename DataType, typename LabelType>
 bool Perceptron<DataType, LabelType>::train_original(const Data<DataType> &X_train,
                                                      const Data<LabelType> &y_train) {
+    Clock clk(__func__);
+
     printf("INFO: training original form\n");
     bool hasMisclassified = true;
     auto m = X_train.m, n = X_train.n;
@@ -147,6 +151,8 @@ bool Perceptron<DataType, LabelType>::train_original(const Data<DataType> &X_tra
 template <typename DataType, typename LabelType>
 bool Perceptron<DataType, LabelType>::train_dual(const Data<DataType> &X_train,
                                                  const Data<LabelType> &y_train) {
+    Clock clk(__func__);
+
     printf("INFO: training dual form\n");
     bool hasMisclassified = true;
     auto m = X_train.m, n = X_train.n;

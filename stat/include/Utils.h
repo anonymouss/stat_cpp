@@ -3,8 +3,13 @@
 
 #include "Types.h"
 
+#include <chrono>
+#include <cinttypes>
 #include <cstdio>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <ratio>
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -141,6 +146,62 @@ std::tuple<Data<DataType>, Data<DataType>> loadTestSet() {
     return std::make_tuple(test_data, test_label);
 }
 }  // namespace iris
+
+// time utils
+
+using TP = std::chrono::high_resolution_clock::time_point;
+
+// Ref: https://stackoverflow.com/questions/42138599/how-to-format-stdchrono-durations
+template <typename... Durations, typename DurationIn>
+std::tuple<Durations...> break_down_durations(DurationIn d) {
+    std::tuple<Durations...> retval;
+    using discard = int[];
+    (void)discard{
+        0, (void(((std::get<Durations>(retval) = std::chrono::duration_cast<Durations>(d)),
+                  (d -= std::chrono::duration_cast<DurationIn>(std::get<Durations>(retval))))),
+            0)...};
+    return retval;
+}
+
+class Clock {
+public:
+    explicit Clock(const char *msg = "") : message(msg) {
+        printf("INFO: Entering function (%s)...\n", message.c_str());
+        start_point = std::chrono::high_resolution_clock::now();
+    }
+
+    ~Clock() {
+        end_point = std::chrono::high_resolution_clock::now();
+        auto duration = end_point - start_point;
+        auto [hour, min, sec, mil] =
+            break_down_durations<std::chrono::hours, std::chrono::minutes, std::chrono::seconds,
+                                 std::chrono::milliseconds>(duration);
+
+        bool all_zero = true;
+
+        auto append_time = [&all_zero](const auto &duration, const char *suffix) {
+            auto cnt = static_cast<uint64_t>(duration.count());
+            if (cnt != 0) {
+                all_zero = false;
+                printf("%" PRIu64 "%s ", cnt, suffix);
+            }
+        };
+
+        printf("INFO: Exiting function (%s)...\n", message.c_str());
+        append_time(hour, "h");
+        append_time(min, "m");
+        append_time(sec, "s");
+        append_time(mil, "ms");
+        if (all_zero) { printf("0ms "); }
+        printf("elapsed\n\n");
+    }
+
+private:
+    std::string message;
+    TP start_point;
+    TP end_point;
+};
+
 }  // namespace stat
 
 #endif  // __UTILS_H__

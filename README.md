@@ -5,7 +5,7 @@ A simple implementation of book ***Statistical Learning Method*** (*aka.* ***统
 ## Progress
 
 - [x] Perceptron
-- [ ] k-NN
+- [x] k-NN
 - [ ] Naive Bayes
 - [ ] Decision Tree
 - [ ] Logisitic Regression
@@ -58,8 +58,8 @@ auto [X_train, y_train] = stat::mnist::loadTrainSet(); // structured binding
 ```cpp
 #include "Stat.h"
 
-// returns std::unique_ptr<Model>, extra indicates to some extra infos some model requires.
-auto model = stat::CreateModel<DataType, LabelType>(ModelType, extra);
+// returns std::unique_ptr<Model>, model params is {key : value} map
+auto model = stat::CreateModel<DataType, LabelType>(ModelType, {} /* model params */);
 model->train(X_train, y_train);
 model->validate(X_test, y_test);
 
@@ -94,4 +94,3 @@ model->validate(X_test, y_test);
 successfully compiled by Clang 8.0 with libc++ on Ubuntu 14.04, enabled C++17.
 
 g++/msvc is not verified.
-
