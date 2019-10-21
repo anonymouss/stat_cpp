@@ -1,6 +1,7 @@
 #ifndef __STAT_H__
 #define __STAT_H__
 
+#include "KNN.h"
 #include "Model.h"
 #include "Perceptron.h"
 #include "Types.h"
@@ -35,7 +36,11 @@ std::unique_ptr<Model<DataType, LabelType>> CreateModel(ModelType type = ModelTy
             model = std::make_unique<Perceptron<DataType, LabelType>>(param);
             break;
         }
-        case MODEL_KNN:
+        case MODEL_KNN: {
+            printf("INFO: creating kNN model\n");
+            model = std::make_unique<KNN<DataType, LabelType>>(param);
+            break;
+        }
         case MODEL_NAIVE_BAYES:
         case MODEL_DECISION_TREE:
         case MODEL_LOGISTIC_REGRESSION:

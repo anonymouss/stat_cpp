@@ -105,6 +105,19 @@ Vec<T> getCol(Mat<T> mat, uint32_t c) {
     return col;
 }
 
+template <typename DataType, typename LabelType>
+double Lp(Vec<DataType> x, Vec<LabelType> y, uint32_t p = 2) {
+    auto mx = x.size(), my = y.size();
+    double sum = 0.0;
+    if (mx == my && mx > 0) {
+        for (auto i = 0; i < mx; ++i) {
+            sum += std::pow(static_cast<double>(std::abs(x[i] - y[i])), static_cast<double>(p));
+        }
+        return std::pow(sum, 1.0 / static_cast<double>(p));
+    }
+    return sum;
+}
+
 }  // namespace stat
 
 #endif  // __MATH_H__

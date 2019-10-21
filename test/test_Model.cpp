@@ -42,10 +42,14 @@ int main() {
             }
         };
 
+        // test perceptron
         TEST_MODEL(stat::ModelType::MODEL_PERCEPTRON, Wrap_v<double>, Wrap_v<double>,
-                   {{"model_type", "original"}});
+                   {{"model_type", "original"}});  // original form
         TEST_MODEL(stat::ModelType::MODEL_PERCEPTRON, Wrap_v<double>, Wrap_v<double>,
-                   {{"model_type", "dual"}});
+                   {{"model_type", "dual"}});  // dual form
+
+        // test k-NN
+        TEST_MODEL(stat::ModelType::MODEL_KNN, Wrap_v<double>, Wrap_v<double>, {{"k", "5"}});
     }
 
     EXIT;

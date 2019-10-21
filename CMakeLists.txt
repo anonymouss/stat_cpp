@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 project(learning_cpp_templates)
 
 # use standard C++ 17, disallow extensions, need compiler support
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSION OFF)
 
