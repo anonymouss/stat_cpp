@@ -17,7 +17,8 @@ int main() {
     // MNIST
     {
         printf("MNIST\n");
-        // if use C++17, this can be simplified to `auto [trainX, trainY] = stat::mnist::loadTrainSet();`
+        // if use C++17, this can be simplified to `auto [trainX, trainY] =
+        // stat::mnist::loadTrainSet();`
         auto train = stat::mnist::loadTrainSet();
         auto trainX = std::get<0>(train);
         auto trainY = std::get<1>(train);
@@ -51,9 +52,7 @@ int main() {
         auto disp = [](stat::Data<float> data, const char *msg = "none") {
             printf("==> %s\n", msg);
             for (auto i = 0; i < data.m; ++i) {
-                for (auto j = 0; j < data.n; ++j) {
-                    printf("%f, ", data.data[i][j]);
-                }
+                for (auto j = 0; j < data.n; ++j) { printf("%f, ", data.data[i][j]); }
                 printf("\n");
             }
         };
@@ -62,7 +61,7 @@ int main() {
         disp(trainY, "train y");
         disp(testX, "test X");
         disp(testY, "test y");
-    } 
+    }
 
     EXIT;
 }

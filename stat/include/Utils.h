@@ -5,9 +5,9 @@
 
 #include <cstdio>
 #include <fstream>
-#include <tuple>
-#include <string>
 #include <sstream>
+#include <string>
+#include <tuple>
 
 #include <arpa/inet.h>
 
@@ -121,7 +121,7 @@ Data<DataType> loadData(const char *filename) {
             v.clear();
         }
         return {data, rows, cols};
-    }else {
+    } else {
         printf("ERROR: failed to load data from (%s)\n", filename);
         return {{}, 0, 0};
     }
@@ -140,7 +140,7 @@ std::tuple<Data<DataType>, Data<DataType>> loadTestSet() {
     auto test_label = loadData<DataType>(kIrisTestY);
     return std::make_tuple(test_data, test_label);
 }
-} // namespace iris
+}  // namespace iris
 }  // namespace stat
 
 #endif  // __UTILS_H__

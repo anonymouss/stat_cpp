@@ -4,8 +4,12 @@
 #include "Types.h"
 
 #include <cstdint>
+#include <string>
+#include <unordered_map>
 
 namespace stat {
+
+using ModelParam = std::unordered_map<std::string, std::string>;
 
 /**
  * Base model class
@@ -13,8 +17,6 @@ namespace stat {
 template <typename DataType, typename LabelType>
 class Model {
 public:
-    // TODO:
-    // struct ModelParam {};
     virtual ~Model() = default;
 
     virtual bool train(const Data<DataType> &X_train, const Data<LabelType> &y_train) = 0;

@@ -1,7 +1,7 @@
 #include <cstdio>
 
-#include "Types.h"
 #include "Math.h"
+#include "Types.h"
 
 #define TestName "Math"
 #define ENTER printf("\n=== Run test " TestName " ===\n\n");
@@ -12,9 +12,7 @@ int main() {
 
     auto dispMat = [](stat::Mat<int> mat) {
         for (auto i = 0; i < mat.size(); ++i) {
-            for (auto j = 0; j < mat[i].size(); ++j) {
-                printf("%d, ", mat[i][j]);
-            }
+            for (auto j = 0; j < mat[i].size(); ++j) { printf("%d, ", mat[i][j]); }
             printf("\n");
         }
         printf("\n");

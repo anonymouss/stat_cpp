@@ -34,18 +34,14 @@ double dot(Vec<T1> x1, Vec<T2> x2) {
         printf("ERROR: dot, dimensions are not aligned of two input vectors [%zu, %zu]\n", m1, m2);
         return sum;
     }
-    for (auto i = 0; i < m1; ++i) {
-        sum += (x1[i] * x2[i]);
-    }
+    for (auto i = 0; i < m1; ++i) { sum += (x1[i] * x2[i]); }
     return sum;
 }
 
 template <typename T1, typename T2>
 Vec<double> dot(Vec<T1> x, T2 a) {
     auto v = allocVec<double>(x.size(), 0);
-    for (auto i = 0; i < x.size(); ++i) {
-        v[i] = x[i] * a;
-    }
+    for (auto i = 0; i < x.size(); ++i) { v[i] = x[i] * a; }
     return v;
 }
 
@@ -62,14 +58,12 @@ Vec<double> add(Vec<T1> v1, Vec<T2> v2) {
         return {};
     }
     auto v = allocVec<double>(m1);
-    for (auto i = 0; i < m1; ++i) {
-        v[i] = v1[i] + v2[i];
-    }
+    for (auto i = 0; i < m1; ++i) { v[i] = v1[i] + v2[i]; }
     return v;
 }
 
 template <typename T1, typename T2>
-Vec<double> add(Vec<T1>v1, T2 a) {
+Vec<double> add(Vec<T1> v1, T2 a) {
     auto v2 = allocVec<T2>(v1.size(), a);
     return add(v1, v2);
 }
@@ -84,9 +78,7 @@ Mat<T> gram(Mat<T> X) {
     auto m = X.size();
     auto g = allocMat<T>(m, m, 0);
     for (auto i = 0; i < m; ++i) {
-        for (auto j = 0; j < m; ++j) {
-            g[i][j] = dot(X[i], X[j]);
-        }
+        for (auto j = 0; j < m; ++j) { g[i][j] = dot(X[i], X[j]); }
     }
     return g;
 }
@@ -109,9 +101,7 @@ Vec<T> getCol(Mat<T> mat, uint32_t c) {
         return {};
     }
     Vec<T> col;
-    for (auto i = 0; i < m; ++i) {
-        col.emplace_back(mat[i][c]);
-    }
+    for (auto i = 0; i < m; ++i) { col.emplace_back(mat[i][c]); }
     return col;
 }
 

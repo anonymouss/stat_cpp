@@ -1,8 +1,8 @@
 #ifndef __PERCEPTRON_H__
 #define __PERCEPTRON_H__
 
-#include "Model.h"
 #include "Math.h"
+#include "Model.h"
 
 namespace stat {
 
@@ -30,7 +30,7 @@ namespace stat {
 template <typename DataType, typename LabelType>
 class Perceptron : public Model<DataType, LabelType> {
 public:
-    explicit Perceptron(uint32_t extra);
+    explicit Perceptron(ModelParam param);
     virtual ~Perceptron() = default;
 
     virtual bool train(const Data<DataType> &X_train, const Data<LabelType> &y_train) final;
@@ -42,6 +42,11 @@ public:
     virtual void describe() const final;
 
 private:
+    enum ModelType : uint32_t {
+        ORIGNAL,
+        DUAL,
+    };
+
     uint32_t type;
     Vec<double> weight;
     double bias;
@@ -51,15 +56,22 @@ private:
 
     double f0(Vec<DataType> X);
     double f1(Vec<LabelType> y, Vec<DataType> g);
-    virtual bool train_original(const Data<DataType> &X_train, const Data<LabelType> &y_train) final;
+    virtual bool train_original(const Data<DataType> &X_train,
+                                const Data<LabelType> &y_train) final;
     virtual bool train_dual(const Data<DataType> &X_train, const Data<LabelType> &y_train) final;
 };
 
 template <typename DataType, typename LabelType>
-Perceptron<DataType, LabelType>::Perceptron(uint32_t extra)
-    : type(extra), weight({}), bias(0.0), eta(0.0), alpha({}), gr({{}}) {}
-
-
+Perceptron<DataType, LabelType>::Perceptron(ModelParam param)
+    : type(ModelType::ORIGNAL), weight({}), bias(0.0), eta(0.0), alpha({}), gr({{}}) {
+    const auto &model_type = param.find("model_type");
+    if (model_type != param.cend()) {
+        if (model_type->second == "original")
+            type = ModelType::ORIGNAL;
+        else if (model_type->second == "dual")
+            type = ModelType::DUAL;
+    }
+}
 
 template <typename DataType, typename LabelType>
 LabelType Perceptron<DataType, LabelType>::predict(const Vec<DataType> &X) {
@@ -67,12 +79,12 @@ LabelType Perceptron<DataType, LabelType>::predict(const Vec<DataType> &X) {
 }
 
 template <typename DataType, typename LabelType>
-double Perceptron<DataType, LabelType>::validate(const Data<DataType> &X_test, const Data<LabelType> &y_test) {
+double Perceptron<DataType, LabelType>::validate(const Data<DataType> &X_test,
+                                                 const Data<LabelType> &y_test) {
     double correct = 0.0;
     auto m = X_test.m;
     for (auto i = 0; i < m; ++i) {
-        if (predict(X_test.data[i]) == y_test.data[i][0])
-            ++correct;
+        if (predict(X_test.data[i]) == y_test.data[i][0]) ++correct;
     }
     double acc = correct / m;
     printf("accuracy: %f\n\n", acc);
@@ -87,17 +99,15 @@ double Perceptron<DataType, LabelType>::f0(Vec<DataType> X) {
 template <typename DataType, typename LabelType>
 double Perceptron<DataType, LabelType>::f1(Vec<LabelType> y, Vec<DataType> g) {
     double sum = 0.0;
-    for (auto i = 0; i < y.size(); ++i) {
-        sum += alpha[i] * y[i] * g[i];
-    }
+    for (auto i = 0; i < y.size(); ++i) { sum += alpha[i] * y[i] * g[i]; }
     sum += bias;
     return sum;
 }
 
 template <typename DataType, typename LabelType>
 bool Perceptron<DataType, LabelType>::train(const Data<DataType> &X_train,
-        const Data<LabelType> &y_train) {
-    if (type == 0) {
+                                            const Data<LabelType> &y_train) {
+    if (type == ModelType::ORIGNAL) {
         return train_original(X_train, y_train);
     } else {
         return train_dual(X_train, y_train);
@@ -106,7 +116,7 @@ bool Perceptron<DataType, LabelType>::train(const Data<DataType> &X_train,
 
 template <typename DataType, typename LabelType>
 bool Perceptron<DataType, LabelType>::train_original(const Data<DataType> &X_train,
-        const Data<LabelType> &y_train) {
+                                                     const Data<LabelType> &y_train) {
     printf("INFO: training original form\n");
     bool hasMisclassified = true;
     auto m = X_train.m, n = X_train.n;
@@ -136,7 +146,7 @@ bool Perceptron<DataType, LabelType>::train_original(const Data<DataType> &X_tra
 
 template <typename DataType, typename LabelType>
 bool Perceptron<DataType, LabelType>::train_dual(const Data<DataType> &X_train,
-        const Data<LabelType> &y_train) {
+                                                 const Data<LabelType> &y_train) {
     printf("INFO: training dual form\n");
     bool hasMisclassified = true;
     auto m = X_train.m, n = X_train.n;
@@ -152,7 +162,7 @@ bool Perceptron<DataType, LabelType>::train_dual(const Data<DataType> &X_train,
     while (hasMisclassified) {
         int misclassified = 0;
         for (auto i = 0; i < m; ++i) {
-            auto g = getCol(gr, i); // m dim vector
+            auto g = getCol(gr, i);  // m dim vector
             if (y[i] * f1(y, g) <= 0) {
                 alpha[i] += eta;
                 bias += y[i] * eta;
@@ -161,9 +171,7 @@ bool Perceptron<DataType, LabelType>::train_dual(const Data<DataType> &X_train,
         }
         if (misclassified == 0) hasMisclassified = false;
     }
-    for (int i = 0; i < m; ++i) {
-        weight = add(weight, dot((alpha[i] * y[i]), X_train.data[i]));
-    }
+    for (int i = 0; i < m; ++i) { weight = add(weight, dot((alpha[i] * y[i]), X_train.data[i])); }
     printf("INFO: training done.\n");
     describe();
     return true;

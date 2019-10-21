@@ -89,3 +89,9 @@ model->validate(X_test, y_test);
 // accuracy: 1.000000
 ```
 
+### Extra
+
+successfully compiled by Clang 8.0 with libc++ on Ubuntu 14.04, enabled C++17.
+
+g++/msvc is not verified.
+

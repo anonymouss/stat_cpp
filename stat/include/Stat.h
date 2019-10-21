@@ -27,12 +27,12 @@ enum ModelType : uint32_t {
 
 template <typename DataType, typename LabelType>
 std::unique_ptr<Model<DataType, LabelType>> CreateModel(ModelType type = ModelType::MODEL_UNKNOWN,
-        uint32_t extra=0) {
+                                                        ModelParam param = {{}}) {
     std::unique_ptr<Model<DataType, LabelType>> model = nullptr;
     switch (type) {
         case MODEL_PERCEPTRON: {
             printf("INFO: creating perceptron model\n");
-            model = std::make_unique<Perceptron<DataType, LabelType>>(extra);
+            model = std::make_unique<Perceptron<DataType, LabelType>>(param);
             break;
         }
         case MODEL_KNN:
@@ -44,8 +44,7 @@ std::unique_ptr<Model<DataType, LabelType>> CreateModel(ModelType type = ModelTy
         case MODEL_EM:
         case MODEL_HMM:
         case MODEL_CRF:
-        default:
-            printf("ERROR: unknown/unsupported model type.\n");
+        default: printf("ERROR: unknown/unsupported model type.\n");
     }
     return model;
 }
