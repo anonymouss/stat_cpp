@@ -98,8 +98,10 @@ int main() {
         // accuracy: 0.968700
         // 4h 45m 31s 470ms elapsed
         // TEST_MODEL(stat::ModelType::MODEL_KNN, Wrap_v<double>, Wrap_v<double>, {{"k", "5"}});
-        TEST_MODEL(stat::ModelType::MODEL_KNN, Wrap_v<double>, Wrap_v<double>,
-                   {{"model_type", "kdtree"}});
+
+        // validation time reduced to about 1 hour by KD-Tree method
+        // TEST_MODEL(stat::ModelType::MODEL_KNN, Wrap_v<double>, Wrap_v<double>,
+        //            {{"model_type", "kdtree"}});
     }
 
     EXIT;

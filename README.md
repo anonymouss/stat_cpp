@@ -4,8 +4,8 @@ A simple implementation of book ***Statistical Learning Method*** (*aka.* ***统
 
 ## Progress
 
-- [x] Perceptron
-- [x] k-NN
+- [x] Perceptron (original form and dual form impl)
+- [x] k-NN (simple knn and kdtree impl)
 - [ ] Naive Bayes
 - [ ] Decision Tree
 - [ ] Logisitic Regression
@@ -43,11 +43,15 @@ struct Data {
 to load dataset:
 
 ```C++
-#include "Uitls.h"
+#include "Stat.h"
 
-auto train = stat::mnist::loadTrainSet();
+auto train = stat::mnist::loadTrainSet(); // or stat::iris::loadTrainSet()
 auto X_train = std::get<0>(train);
 auto y_train = std::get<1>(train);
+
+auto test = stat::mnist::loadTestSet();
+auto X_test = std::get<0>(train);
+auto y_test = std::get<1>(train);
 
 // if compile with C++17 onwards, tuple can be simplified by:
 auto [X_train, y_train] = stat::mnist::loadTrainSet(); // structured binding
@@ -59,7 +63,10 @@ auto [X_train, y_train] = stat::mnist::loadTrainSet(); // structured binding
 #include "Stat.h"
 
 // returns std::unique_ptr<Model>, model params is {key : value} map
-auto model = stat::CreateModel<DataType, LabelType>(ModelType, {{"param_key", "param_value"}} /* model params */);
+auto model = stat::CreateModel<DataType, LabelType>(
+    ModelType,
+    {{"param_key", "param_value"},
+    {"model_type", "kdtree"}} /* ... model params */);
 model->train(X_train, y_train);
 model->validate(X_test, y_test);
 

@@ -5,6 +5,7 @@
 #include "Model.h"
 
 #include <algorithm>
+#include <functional>
 #include <map>
 #include <memory>
 #include <set>
@@ -33,6 +34,8 @@ private:
         KDTREE,
     };
 
+    // combine X (sample data) and y (sample lable) together. X will be sorted during building
+    // kd-tree, this is to make sure that y and X are in the same order
     using Point = std::pair<Vec<DataType>, LabelType>;
 
     struct KdNode {
@@ -62,6 +65,11 @@ private:
     std::shared_ptr<KdNode> root;
     std::shared_ptr<KdNode> nearest;
 
+    // compare kNearestNodes, compare each node's nearest_dist
+    using NodeCmp = std::function<bool(std::shared_ptr<KdNode>, std::shared_ptr<KdNode>)>;
+
+    std::set<std::shared_ptr<KdNode>, NodeCmp> kNearestNodes;
+
     bool train_simple(const Data<DataType> &X_train, const Data<LabelType> &y_train);
     bool train_kdtree(const Data<DataType> &X_train, const Data<LabelType> &y_train);
     LabelType predict_simple(const Vec<DataType> &X);
@@ -70,7 +78,7 @@ private:
     std::shared_ptr<KdNode> createKdTree(typename std::vector<Point>::iterator start,
                                          typename std::vector<Point>::iterator end,
                                          uint32_t depth = 0);
-    std::shared_ptr<KdNode> findNearest(std::shared_ptr<KdNode> currentNode, Vec<DataType> X);
+    void findNearest(std::shared_ptr<KdNode> currentNode, Vec<DataType> X);
 };
 
 template <typename DataType, typename LabelType>
@@ -82,7 +90,10 @@ KNN<DataType, LabelType>::KNN(ModelParam param)
       ydata({{}}),
       feature_dim(0),
       root(nullptr),
-      nearest(nullptr) {
+      nearest(nullptr),
+      kNearestNodes([](std::shared_ptr<KdNode> n1, std::shared_ptr<KdNode> n2) {
+          return n1->nearest_dist < n2->nearest_dist;
+      }) {
     const auto &model_k = param.find("k");
     if (model_k != param.cend()) {
         // trust user input, user code must ensure values are correct
@@ -212,12 +223,31 @@ LabelType KNN<DataType, LabelType>::predict_kdtree(const Vec<DataType> &X) {
         return 0;
     }
 
+    // clear previous nearest info.
+    nearest = nullptr;
+    kNearestNodes.clear();
+
     findNearest(root, X);
     if (!nearest) {
         printf("ERROR: find nearst failed\n");
         return 0;
     }
-    return nearest->label;
+    std::unordered_set<LabelType> label_set;
+    std::multiset<LabelType> label_all;
+    for (const auto &n : kNearestNodes) {
+        label_set.emplace(n->label);
+        label_all.emplace(n->label);
+    }
+    std::size_t maxCount = 0;
+    LabelType predictedLabel = 0;
+    for (auto label : label_set) {
+        auto count = label_all.count(label);
+        if (count > maxCount) {
+            maxCount = count;
+            predictedLabel = label;
+        }
+    }
+    return predictedLabel;
 }
 
 template <typename DataType, typename LabelType>
@@ -242,6 +272,8 @@ void KNN<DataType, LabelType>::describe() const {
 }
 
 // Ref: https://github.com/junjiedong/KDTree
+// KD-Tree is actually a BST(Binary Search Tree), but it's order relation is compared between each
+// node's value on current split axis (index)
 template <typename DataType, typename LabelType>
 std::shared_ptr<typename KNN<DataType, LabelType>::KdNode> KNN<DataType, LabelType>::createKdTree(
     typename std::vector<Point>::iterator start, typename std::vector<Point>::iterator end,
@@ -253,7 +285,8 @@ std::shared_ptr<typename KNN<DataType, LabelType>::KdNode> KNN<DataType, LabelTy
     auto mid = start + len / 2;
     std::nth_element(start, mid, end, cmp);
     // move to make left_val < mid_val, right_val >= mid_val
-    while (mid > start && (mid - 1)->first[axis] == mid->first[axis]) --mid;
+    mid = std::partition(start, mid,
+                         [=](const auto &p) { return p.first[axis] != mid->first[axis]; });
     auto node =
         std::make_shared<typename KNN<DataType, LabelType>::KdNode>(mid->first, mid->second, depth);
     node->left = createKdTree(start, mid, depth + 1);
@@ -261,13 +294,13 @@ std::shared_ptr<typename KNN<DataType, LabelType>::KdNode> KNN<DataType, LabelTy
     return node;
 }
 
-// TODO: current impl only finds the nearest one point as the predicted class. Equivalent to k=1 in
-// KNN. Not real KNN. Fix this later
 template <typename DataType, typename LabelType>
-std::shared_ptr<typename KNN<DataType, LabelType>::KdNode> KNN<DataType, LabelType>::findNearest(
+void KNN<DataType, LabelType>::findNearest(
     std::shared_ptr<typename KNN<DataType, LabelType>::KdNode> currentNode, Vec<DataType> X) {
-    if (!currentNode) return nullptr;
+    if (!currentNode) return;
     auto axis = currentNode->level % feature_dim;
+    // find the leaf node which may be the nearest one to X (check the vertical distance from the
+    // split axis).
     if (currentNode->left || currentNode->right) {
         if (X[axis] < currentNode->data[axis] && currentNode->left) {
             findNearest(currentNode->left, X);
@@ -276,12 +309,25 @@ std::shared_ptr<typename KNN<DataType, LabelType>::KdNode> KNN<DataType, LabelTy
         }
     }
 
+    // save k nearest nodes. update the nearest_dist to the lp distance of two points
     auto dist = Lp(X, currentNode->data, p);
     if (!nearest || dist < nearest->nearest_dist) {
         nearest = currentNode;
         nearest->nearest_dist = dist;
+        if (kNearestNodes.size() < k) {
+            kNearestNodes.insert(nearest);
+        } else {
+            auto last = kNearestNodes.end();
+            --last;
+            if ((*last)->nearest_dist > dist) {
+                kNearestNodes.erase(last);
+                kNearestNodes.insert(nearest);
+            }
+        }
     }
 
+    // the vertical distance from split axis < lp distance means that a circle with X as point and
+    // lp distance as radius may intersect with other nodes' split axes. check them.
     if (std::abs(X[axis] - currentNode->data[axis]) < nearest->nearest_dist) {
         if (currentNode->left && X[axis] >= currentNode->data[axis]) {
             findNearest(currentNode->left, X);
@@ -289,8 +335,6 @@ std::shared_ptr<typename KNN<DataType, LabelType>::KdNode> KNN<DataType, LabelTy
             findNearest(currentNode->right, X);
         }
     }
-
-    return nearest;
 }
 
 }  // namespace stat
