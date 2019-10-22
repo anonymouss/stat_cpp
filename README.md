@@ -21,11 +21,11 @@ A simple implementation of book ***Statistical Learning Method*** (*aka.* ***统
 
 Dataset:
 
-1. [Mnist dataset](./data/mnist/)(http://yann.lecun.com/exdb/mnist/).
+1. [Mnist dataset](./data/mnist/) (http://yann.lecun.com/exdb/mnist/).
 
     multi-classes, 10 labels
 
-2. [Iris dataset](./data/iris/)(https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_iris.html)
+2. [Iris dataset](./data/iris/) (https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_iris.html)
 
     splited to 2 classes
 
@@ -59,11 +59,11 @@ auto [X_train, y_train] = stat::mnist::loadTrainSet(); // structured binding
 #include "Stat.h"
 
 // returns std::unique_ptr<Model>, model params is {key : value} map
-auto model = stat::CreateModel<DataType, LabelType>(ModelType, {} /* model params */);
+auto model = stat::CreateModel<DataType, LabelType>(ModelType, {{"param_key", "param_value"}} /* model params */);
 model->train(X_train, y_train);
 model->validate(X_test, y_test);
 
-// Outputs:
+// Sample Outputs:
 // INFO: creating perceptron model
 // INFO: training original form
 // INFO: training done.
@@ -88,6 +88,11 @@ model->validate(X_test, y_test);
 //
 // accuracy: 1.000000
 ```
+
+### Reference
+
+- Python impl of 'statistical learning method': https://github.com/fengdu78/lihang-code
+- C++ KD-tree: https://github.com/junjiedong/KDTree
 
 ### Extra
 

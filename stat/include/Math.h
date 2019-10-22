@@ -17,7 +17,7 @@ Vec<T> allocVec(uint32_t N, T v = 0) {
 
 template <typename T>
 Mat<T> allocMat(uint32_t M, uint32_t N, T v = 0) {
-    Mat<T> mat(M, allocVec<T>(N));
+    Mat<T> mat(M, allocVec<T>(N, v));
     return mat;
 }
 
@@ -27,7 +27,7 @@ double sign(T v) {
 }
 
 template <typename T1, typename T2>
-double dot(Vec<T1> x1, Vec<T2> x2) {
+double dot(const Vec<T1> &x1, const Vec<T2> &x2) {
     double sum = 0.0;
     auto m1 = x1.size(), m2 = x2.size();
     if (m1 != m2) {
@@ -39,19 +39,19 @@ double dot(Vec<T1> x1, Vec<T2> x2) {
 }
 
 template <typename T1, typename T2>
-Vec<double> dot(Vec<T1> x, T2 a) {
+Vec<double> dot(const Vec<T1> &x, T2 a) {
     auto v = allocVec<double>(x.size(), 0);
     for (auto i = 0; i < x.size(); ++i) { v[i] = x[i] * a; }
     return v;
 }
 
 template <typename T1, typename T2>
-Vec<double> dot(T1 a, Vec<T2> x) {
+Vec<double> dot(T1 a, const Vec<T2> &x) {
     return dot(x, a);
 }
 
 template <typename T1, typename T2>
-Vec<double> add(Vec<T1> v1, Vec<T2> v2) {
+Vec<double> add(const Vec<T1> &v1, const Vec<T2> &v2) {
     auto m1 = v1.size(), m2 = v2.size();
     if (m1 != m2) {
         printf("ERROR: add, dimensions are not aligned of two input vectors [%zu, %zu]\n", m1, m2);
@@ -63,18 +63,18 @@ Vec<double> add(Vec<T1> v1, Vec<T2> v2) {
 }
 
 template <typename T1, typename T2>
-Vec<double> add(Vec<T1> v1, T2 a) {
+Vec<double> add(const Vec<T1> &v1, T2 a) {
     auto v2 = allocVec<T2>(v1.size(), a);
     return add(v1, v2);
 }
 
 template <typename T1, typename T2>
-Vec<double> add(T1 a, Vec<T2> v2) {
+Vec<double> add(T1 a, const Vec<T2> &v2) {
     return add(v2, a);
 }
 
 template <typename T>
-Mat<T> gram(Mat<T> X) {
+Mat<T> gram(const Mat<T> &X) {
     auto m = X.size();
     auto g = allocMat<T>(m, m, 0);
     for (auto i = 0; i < m; ++i) {
@@ -84,7 +84,20 @@ Mat<T> gram(Mat<T> X) {
 }
 
 template <typename T>
-Vec<T> getRow(Mat<T> mat, uint32_t r) {
+Mat<T> transpose(const Mat<T> &mat) {
+    auto m = mat.size();
+    if (m == 0) { printf("ERROR: transpose on empty matrix (rows = 0)\n"); }
+    auto n = mat[0].size();
+    if (n == 0) { printf("ERROR: transpose on empty matrix (cols = 0)\n"); }
+    auto transMat = allocMat<T>(n, m, 0);
+    for (auto i = 0; i < m; ++i) {
+        for (auto j = 0; j < n; ++j) { transMat[j][i] = mat[i][j]; }
+    }
+    return transMat;
+}
+
+template <typename T>
+Vec<T> getRow(const Mat<T> &mat, uint32_t r) {
     if (r >= mat.size()) {
         printf("ERROR: row index out of bound\n");
         return {};
@@ -94,7 +107,7 @@ Vec<T> getRow(Mat<T> mat, uint32_t r) {
 }
 
 template <typename T>
-Vec<T> getCol(Mat<T> mat, uint32_t c) {
+Vec<T> getCol(const Mat<T> &mat, uint32_t c) {
     auto m = mat.size(), n = mat[0].size();
     if (c >= n) {
         printf("ERROR: col index out of bound\n");
@@ -106,7 +119,7 @@ Vec<T> getCol(Mat<T> mat, uint32_t c) {
 }
 
 template <typename DataType, typename LabelType>
-double Lp(Vec<DataType> x, Vec<LabelType> y, uint32_t p = 2) {
+double Lp(const Vec<DataType> &x, const Vec<LabelType> &y, uint32_t p = 2) {
     auto mx = x.size(), my = y.size();
     double sum = 0.0;
     if (mx == my && mx > 0) {

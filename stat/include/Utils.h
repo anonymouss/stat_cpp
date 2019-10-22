@@ -166,7 +166,7 @@ std::tuple<Durations...> break_down_durations(DurationIn d) {
 class Clock {
 public:
     explicit Clock(const char *msg = "") : message(msg) {
-        printf("INFO: Entering function (%s)...\n", message.c_str());
+        printf("INFO: Entering function (%s)...\n\n", message.c_str());
         start_point = std::chrono::high_resolution_clock::now();
     }
 
