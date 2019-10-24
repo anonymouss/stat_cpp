@@ -57,6 +57,7 @@ private:
     uint32_t k;
     uint32_t p;
     KnnType type;
+    bool isModelShow;
 
     Data<DataType> xdata;
     Data<LabelType> ydata;
@@ -86,6 +87,7 @@ KNN<DataType, LabelType>::KNN(ModelParam param)
     : k(3),
       p(2),
       type(KnnType::SIMPLE_KNN),
+      isModelShow(false),
       xdata({{}}),
       ydata({{}}),
       feature_dim(0),
@@ -110,6 +112,11 @@ KNN<DataType, LabelType>::KNN(ModelParam param)
         } else if (model_type->second == "kdtree") {
             type = KnnType::KDTREE;
         }
+    }
+
+    const auto &model_show = param.find("model_show");
+    if (model_show != param.cend()) {
+        if (model_show->second == "true") { isModelShow = true; }
     }
 }
 
@@ -267,6 +274,7 @@ double KNN<DataType, LabelType>::validate(const Data<DataType> &X_test,
 
 template <typename DataType, typename LabelType>
 void KNN<DataType, LabelType>::describe() const {
+    if (!isModelShow) return;
     printf("\nKNN:\n\n");
     printf("with k = %u\n\n", k);
 }
@@ -328,7 +336,7 @@ void KNN<DataType, LabelType>::findNearest(
 
     // the vertical distance from split axis < lp distance means that a circle with X as point and
     // lp distance as radius may intersect with other nodes' split axes. check them.
-    if (std::abs(X[axis] - currentNode->data[axis]) < nearest->nearest_dist) {
+    if (std::abs(static_cast<double>(X[axis] - currentNode->data[axis])) < nearest->nearest_dist) {
         if (currentNode->left && X[axis] >= currentNode->data[axis]) {
             findNearest(currentNode->left, X);
         } else if (currentNode->right && X[axis] < currentNode->data[axis]) {

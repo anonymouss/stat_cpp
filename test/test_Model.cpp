@@ -3,6 +3,9 @@
 #include <cstdio>
 #include <thread>
 
+#define TEST_IRIS   // comment out to disable test on iris dataset
+#define TEST_MNIST  // comment out to disable test on mnist dataset
+
 #define TestName "Model"
 #define ENTER printf("\n=== Run test " TestName " ===\n\n");
 #define EXIT printf("\n=== Exit test " TestName " ===\n\n");
@@ -25,6 +28,7 @@ constexpr T Wrap_v = Wrap<T>::value;
 int main() {
     ENTER;
 
+#ifdef TEST_IRIS
     {  // iris
         printf("*** Test on iris dataset ***\n\n");
 
@@ -56,17 +60,23 @@ int main() {
 
         // test perceptron
         TEST_MODEL(stat::ModelType::MODEL_PERCEPTRON, Wrap_v<double>, Wrap_v<double>,
-                   {{"model_type", "original"}});  // original form
+                   {{"model_type", "original"}, {"model_show", "true"}});  // original form
         TEST_MODEL(stat::ModelType::MODEL_PERCEPTRON, Wrap_v<double>, Wrap_v<double>,
-                   {{"model_type", "dual"}});  // dual form
+                   {{"model_type", "dual"}, {"model_show", "true"}});  // dual form
 
         // test k-NN
         TEST_MODEL(stat::ModelType::MODEL_KNN, Wrap_v<double>, Wrap_v<double>,
                    {{"k", "5"}, {"model_type", "knn"}});  // simple knn
         TEST_MODEL(stat::ModelType::MODEL_KNN, Wrap_v<double>, Wrap_v<double>,
                    {{"k", "5"}, {"model_type", "kdtree"}});  // kdtree
-    }
 
+        // test naive bayes
+        TEST_MODEL(stat::ModelType::MODEL_NAIVE_BAYES, Wrap_v<double>, Wrap_v<double>,
+                   {{"model_show", "true"}});  // simple knn
+    }
+#endif  // TEST_IRIS
+
+#ifdef TEST_MNIST
     {  // mnist
         printf("*** Test on mnist dataset ***\n\n");
 
@@ -99,10 +109,48 @@ int main() {
         // 4h 45m 31s 470ms elapsed
         // TEST_MODEL(stat::ModelType::MODEL_KNN, Wrap_v<double>, Wrap_v<double>, {{"k", "5"}});
 
-        // validation time reduced to about 1 hour by KD-Tree method
         // TEST_MODEL(stat::ModelType::MODEL_KNN, Wrap_v<double>, Wrap_v<double>,
         //            {{"model_type", "kdtree"}});
+
+        // test naive bayes
+        // without binaryzation - accuracy is only 0.6097
+        TEST_MODEL(stat::ModelType::MODEL_NAIVE_BAYES, Wrap_v<double>, Wrap_v<double>,
+                   {{"model_show", "true"}, {"model_type", "gaussian"}});
+        {
+            // binaryzation - accuracy is only 0.7103
+            double threshold = 127.0;
+            uint32_t m_train = trainX.m, m_test = testX.m, n = trainX.n;
+            stat::Mat<uint32_t> binTrainData, binTestData;
+            for (auto i = 0; i < m_train; ++i) {
+                stat::Vec<uint32_t> v;
+                for (auto j = 0; j < n; ++j) {
+                    uint32_t e = trainX.data[i][j] > threshold ? 1 : 0;
+                    v.emplace_back(e);
+                }
+                binTrainData.emplace_back(v);
+                v.clear();
+            }
+            for (auto i = 0; i < m_test; ++i) {
+                stat::Vec<uint32_t> v;
+                for (auto j = 0; j < n; ++j) {
+                    uint32_t e = testX.data[i][j] > threshold ? 1 : 0;
+                    v.emplace_back(e);
+                }
+                binTestData.emplace_back(v);
+                v.clear();
+            }
+            stat::Data<uint32_t> X_train_new{binTrainData, m_train, n};
+            stat::Data<uint32_t> X_test_new{binTestData, m_test, n};
+
+            auto model = stat::CreateModel<uint32_t, double>(stat::ModelType::MODEL_NAIVE_BAYES,
+                                                             {{"model_show", "false"}});
+            if (model) {
+                model->train(X_train_new, trainY);
+                model->validate(X_test_new, testY);
+            }
+        }
     }
+#endif  // TEST_MNIST
 
     EXIT;
 }

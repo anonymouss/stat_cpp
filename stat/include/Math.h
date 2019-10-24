@@ -6,8 +6,17 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <limits>
 
 namespace stat {
+
+template <typename T>
+constexpr T Inf = std::numeric_limits<T>::infinity();
+
+template <typename T>
+constexpr T NaN = std::numeric_limits<T>::quiet_NaN();
+
+constexpr double pi = 3.141592653589793238463;
 
 template <typename T>
 Vec<T> allocVec(uint32_t N, T v = 0) {
@@ -118,17 +127,60 @@ Vec<T> getCol(const Mat<T> &mat, uint32_t c) {
     return col;
 }
 
-template <typename DataType, typename LabelType>
-double Lp(const Vec<DataType> &x, const Vec<LabelType> &y, uint32_t p = 2) {
+template <typename T1, typename T2>
+double Lp(const Vec<T1> &x, const Vec<T2> &y, uint32_t p = 2) {
     auto mx = x.size(), my = y.size();
     double sum = 0.0;
     if (mx == my && mx > 0) {
         for (auto i = 0; i < mx; ++i) {
-            sum += std::pow(static_cast<double>(std::abs(x[i] - y[i])), static_cast<double>(p));
+            sum += std::pow(std::abs(static_cast<double>(x[i] - y[i])), static_cast<double>(p));
         }
         return std::pow(sum, 1.0 / static_cast<double>(p));
     }
     return sum;
+}
+
+template <typename T>
+T sum(const Vec<T> &X) {
+    T sum = 0;
+    // overflow risk
+    for (const auto &x : X) sum += x;
+    return sum;
+}
+
+template <typename T>
+double mean(const Vec<T> &X) {
+    if (X.size() == 0) {
+        printf("ERROR: invalid input vector\n");
+        return NaN<double>;
+    }
+    double sum = stat::sum(X);
+    return sum / X.size();
+}
+
+// \sigma^2 = \frac{\sum{(X-\mu)^2}}{N}
+template <typename T>
+double stdev(const Vec<T> &X) {
+    if (X.size() == 0) {
+        printf("ERROR: invalid input vector\n");
+        return NaN<double>;
+    }
+    auto mu = mean(X);
+    double sum = 0.0;
+    for (const auto &x : X) { sum += std::pow(x - mu, 2); }
+    return std::sqrt(sum / X.size());
+}
+
+// gaussian probability, aka. normal distribution
+// f(x) = \frac{1}{\sqrt{2\pi}\sigma}\exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)
+template <typename T>
+double gaussian_prob(T x, double mu, double sigma) {
+    if (sigma == 0) {
+        printf("ERROR: sigma = 0\n");
+        return NaN<double>;
+    }
+    double exp = std::exp(-(std::pow(x - mu, 2) / 2.0 / std::pow(sigma, 2)));
+    return exp / std::sqrt(2 * pi) / sigma;
 }
 
 }  // namespace stat

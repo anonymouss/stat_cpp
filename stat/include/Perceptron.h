@@ -48,6 +48,7 @@ private:
     };
 
     uint32_t type;
+    bool isModelShow;
     Vec<double> weight;
     double bias;
     double eta;
@@ -63,13 +64,24 @@ private:
 
 template <typename DataType, typename LabelType>
 Perceptron<DataType, LabelType>::Perceptron(ModelParam param)
-    : type(ModelType::ORIGNAL), weight({}), bias(0.0), eta(0.0), alpha({}), gr({{}}) {
+    : type(ModelType::ORIGNAL),
+      isModelShow(false),
+      weight({}),
+      bias(0.0),
+      eta(0.0),
+      alpha({}),
+      gr({{}}) {
     const auto &model_type = param.find("model_type");
     if (model_type != param.cend()) {
         if (model_type->second == "original")
             type = ModelType::ORIGNAL;
         else if (model_type->second == "dual")
             type = ModelType::DUAL;
+    }
+
+    const auto &model_show = param.find("model_show");
+    if (model_show != param.cend()) {
+        if (model_show->second == "true") { isModelShow = true; }
     }
 }
 
@@ -185,6 +197,7 @@ bool Perceptron<DataType, LabelType>::train_dual(const Data<DataType> &X_train,
 
 template <typename DataType, typename LabelType>
 void Perceptron<DataType, LabelType>::describe() const {
+    if (!isModelShow) return;
     printf("\nPerceptron:\n\n");
     printf("Model: $f(x) = sign(w \\cdot x + b)$\n");
     printf("       w = [ ");

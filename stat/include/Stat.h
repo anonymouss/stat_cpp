@@ -3,6 +3,7 @@
 
 #include "KNN.h"
 #include "Model.h"
+#include "NaiveBayes.h"
 #include "Perceptron.h"
 #include "Types.h"
 #include "Utils.h"
@@ -32,7 +33,7 @@ std::unique_ptr<Model<DataType, LabelType>> CreateModel(ModelType type = ModelTy
     std::unique_ptr<Model<DataType, LabelType>> model = nullptr;
     switch (type) {
         case MODEL_PERCEPTRON: {
-            printf("INFO: creating perceptron model\n");
+            printf("INFO: creating Perceptron model\n");
             model = std::make_unique<Perceptron<DataType, LabelType>>(param);
             break;
         }
@@ -41,7 +42,11 @@ std::unique_ptr<Model<DataType, LabelType>> CreateModel(ModelType type = ModelTy
             model = std::make_unique<KNN<DataType, LabelType>>(param);
             break;
         }
-        case MODEL_NAIVE_BAYES:
+        case MODEL_NAIVE_BAYES: {
+            printf("INFO: creating Naive Bayes model\n");
+            model = std::make_unique<NaiveBayes<DataType, LabelType>>(param);
+            break;
+        }
         case MODEL_DECISION_TREE:
         case MODEL_LOGISTIC_REGRESSION:
         case MODEL_SVM:

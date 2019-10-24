@@ -23,5 +23,12 @@ int main() {
     auto g = stat::gram(X);
     dispMat(g);
 
+    stat::Vec<int> v{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    auto mu = stat::mean(v);
+    auto sigma = stat::stdev(v);
+    auto gaussian = stat::gaussian_prob(5, mu, sigma);
+    dispMat({v});
+    printf("mu = %f, sigma = %f, gaussian probability of 5 = %f\n", mu, sigma, gaussian);
+
     EXIT;
 }

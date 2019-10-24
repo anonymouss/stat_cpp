@@ -6,7 +6,7 @@ A simple implementation of book ***Statistical Learning Method*** (*aka.* ***统
 
 - [x] Perceptron (original form and dual form impl)
 - [x] k-NN (simple knn and kdtree impl)
-- [ ] Naive Bayes
+- [x] Naive Bayes (gaussian distribution model)
 - [ ] Decision Tree
 - [ ] Logisitic Regression
 - [ ] SVM
@@ -100,6 +100,10 @@ model->validate(X_test, y_test);
 
 - Python impl of 'statistical learning method': https://github.com/fengdu78/lihang-code
 - C++ KD-tree: https://github.com/junjiedong/KDTree
+- Naive Bayes: 
+    - https://www.cnblogs.com/sxron/p/5452821.html,            
+    - https://blog.csdn.net/qq_27009517/article/details/80044431
+    - https://lazyprogrammer.me/bayes-classifier-and-naive-bayes-tutorial-using/
 
 ### Extra
 
